@@ -1,21 +1,32 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { nanoid } from "@reduxjs/toolkit";
-import { addTodo } from "../redux/todos/todosSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { addTodoAsync } from "../redux/todos/services";
 
 function Form() {
   const dispatch = useDispatch();
   const [title, setTitle] = useState("");
 
-  const handleSubmit = (e) => {
+  const isLoading = useSelector((state) => state.todos.addNewTodo.isLoading);
+  const error = useSelector((state) => state.todos.addNewTodo.error);
+
+  if (error) {
+    alert(error);
+    return;
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (title === "") return;
-    dispatch(addTodo({ title }));
+    await dispatch(addTodoAsync({ title }));
     setTitle("");
   };
   return (
-    <form onSubmit={handleSubmit}>
+    <form
+      onSubmit={handleSubmit}
+      style={{ display: "flex", alignItems: "center" }}
+    >
       <input
+        disabled={isLoading}
         property="newTodo"
         className="new-todo"
         placeholder="What needs to be done?"
@@ -23,6 +34,7 @@ function Form() {
         onChange={(e) => setTitle(e.target.value)}
         autoFocus
       />
+      {isLoading && <span style={{ paddingRight: 10 }}>Loading..</span>}
     </form>
   );
 }
